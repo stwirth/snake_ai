@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+
+import game
+import curses_display
+
+if __name__ == '__main__':
+    try:
+        #game.run_game_loop(game.DummyDisplay)
+        game.run_game_loop(curses_display.CursesDisplay)
+    except KeyboardInterrupt:
+        pass
+
