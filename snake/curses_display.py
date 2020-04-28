@@ -65,6 +65,8 @@ class CursesDisplay(Display):
                     pad.addch(y + 1, x + 1, ord(' '))
                 elif game.room.get_field_value(pos) == Field.WALL:
                     pad.addch(y + 1, x + 1, curses.ACS_BLOCK)
+                if pos == game.egg_position:
+                    pad.addch(y, x, ord('O'))
         for pos in game.snake.elements:
             pad.addch(pos.y, pos.x, ord('S'))
 

@@ -5,8 +5,9 @@ import curses_display
 
 if __name__ == '__main__':
     try:
-        #game.run_game_loop(game.DummyDisplay)
-        game.run_game_loop(curses_display.CursesDisplay)
+        gm = game.Game(initial_snake_length=10)
+        gm.step()
+        game.run_game_loop(gm, curses_display.CursesDisplay)
     except KeyboardInterrupt:
         pass
 
