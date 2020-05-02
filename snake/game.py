@@ -104,6 +104,7 @@ class GameState(enum.Enum):
 class Game():
     def __init__(self, room=Room(60, 40), initial_snake_length=1):
         self.room = room
+        self.score = 0
         start_position = Position(self.room.width // 2, self.room.height // 2)
         self.snake = Snake(start_position=start_position, length=initial_snake_length)
         self.randomize_egg_position()
@@ -118,6 +119,7 @@ class Game():
             if self.snake.get_head_position() == self.egg_position:
                 self.snake.enlarge()
                 self.randomize_egg_position()
+                self.score += 1
             if not self.room.is_inside(self.snake.get_head_position()):
                 self.state = GameState.GAME_OVER
             if self.snake.in_self_collision():
@@ -162,7 +164,7 @@ class DummyDisplay(Display):
 
 def run_game_loop(game, display_type):
     with display_type() as display:
-        loop_rate = 20.0
+        loop_rate = 10.0
         loop_duration = 1.0 / loop_rate
         while game.state != GameState.GAME_OVER:
             start_time = time.time()
