@@ -6,7 +6,6 @@ Interactive Snake Game
 import game
 import curses_display
 import argparse
-import bot
 
 if __name__ == '__main__':
 

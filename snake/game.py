@@ -13,6 +13,10 @@ class Direction(enum.Enum):
 
 
 class Position:
+    @staticmethod
+    def manhattan_distance(pos1, pos2):
+        return abs(pos1.x - pos2.x) + abs(pos1.y - pos2.y)
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -28,7 +32,7 @@ class Position:
 
     def __add__(self, other):
         if isinstance(other, Direction):
-            return Position(self.x + other[0], self.y + other[1])
+            return Position(self.x + other.value[0], self.y + other.value[1])
 
 
 class Snake():
@@ -87,9 +91,9 @@ class Room():
         return self.fields[position.y * self.width + position.x]
 
     def is_inside(self, position):
-        if position.x <= 0 or position.x >= self.width - 1:
+        if position.x < 0 or position.x >= self.width:
             return False
-        if position.y <= 0 or position.y >= self.height - 1:
+        if position.y < 0 or position.y >= self.height:
             return False
         return True
 
@@ -187,9 +191,9 @@ class InputDevice():
         raise NotImplementedError()
 
 
-class DummyDisplay(Display):
+class NoDisplay(Display):
     def render(self, game):
-        print(game.snake.elements, game.state)
+        pass
 
 
 class DummyInputDevice(InputDevice):
@@ -200,9 +204,9 @@ class DummyInputDevice(InputDevice):
 def run_game_loop(game, input_device, display, speed):
     while game.state != GameState.GAME_OVER:
         start_time = time.time()
+        display.render(game)
         game.process_actions(input_device.get_actions())
         game.step()
-        display.render(game)
         if speed is not None and speed > 0:
             current_time = time.time()
             loop_duration = 1.0 / speed
