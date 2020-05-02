@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+"""
+Let a bot play snake
+"""
+
+import game
+import curses_display
+import argparse
+import bots
+
+if __name__ == '__main__':
+
+    available_displays = game.Display.get_available_types()
+    available_bots = bots.Bot.get_available_types()
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-l', '--initial-snake-length', type=int, default=10)
+    parser.add_argument('-i', '--iterations', type=int, default=10)
+    parser.add_argument('-s', '--speed', type=float, default=0.0)
+    parser.add_argument('-d', '--display', choices=available_displays, default='CursesDisplay')
+    parser.add_argument('-b', '--bot', choices=available_bots, default='RandomBot')
+    args = parser.parse_args()
+
+    try:
+        scores = []
+        for i in range(args.iterations):
+            gm = game.Game(initial_snake_length=args.initial_snake_length)
+            bot = bots.Bot.create(args.bot, gm)
+            with game.Display.create(args.display) as display:
+                game.run_game_loop(gm, bot, display, args.speed)
+                print('Iteration {}: Score {}.'.format(i, gm.score))
+                scores.append(gm.score)
+        print('Average score over {} iterations: {}.'.format(args.iterations, sum(scores) / len(scores)))
+    except KeyboardInterrupt:
+        pass
+
+
