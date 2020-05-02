@@ -26,6 +26,10 @@ class Position:
     def __repr__(self):
         return '[{}, {}]'.format(self.x, self.y)
 
+    def __add__(self, other):
+        if isinstance(other, Direction):
+            return Position(self.x + other[0], self.y + other[1])
+
 
 class Snake():
     def __init__(self, start_position, start_direction=Direction.RIGHT, length=1):
@@ -59,6 +63,9 @@ class Snake():
                 return True
         return False
 
+    def occupies(self, position):
+        return position in self.elements
+
 
 @enum.unique
 class Field(enum.Enum):
@@ -80,19 +87,14 @@ class Room():
         return self.fields[position.y * self.width + position.x]
 
     def is_inside(self, position):
-        if position.x <= 0 or position.x >= self.width:
+        if position.x <= 0 or position.x >= self.width - 1:
             return False
-        if position.y <= 0 or position.y >= self.height:
+        if position.y <= 0 or position.y >= self.height - 1:
             return False
         return True
 
-
-@enum.unique
-class Event(enum.Enum):
-    KEY_UP = 1
-    KEY_DOWN = 2
-    KEY_LEFT = 3
-    KEY_RIGHT = 4
+    def is_free(self, position):
+        return self.is_inside(position) and self.get_field_value(position) == Field.FREE
 
 
 @enum.unique
@@ -102,7 +104,7 @@ class GameState(enum.Enum):
 
 
 class Game():
-    def __init__(self, room=Room(60, 40), initial_snake_length=1):
+    def __init__(self, room=Room(60, 60), initial_snake_length=1):
         self.room = room
         self.score = 0
         start_position = Position(self.room.width // 2, self.room.height // 2)
@@ -111,7 +113,7 @@ class Game():
         self.state = GameState.RUNNING
 
     def randomize_egg_position(self):
-        self.egg_position = Position(random.randrange(1, self.room.width), random.randrange(1, self.room.height))
+        self.egg_position = Position(random.randrange(0, self.room.width), random.randrange(0, self.room.height))
 
     def step(self):
         if self.state == GameState.RUNNING:
@@ -125,22 +127,30 @@ class Game():
             if self.snake.in_self_collision():
                 self.state = GameState.GAME_OVER
 
-    def process_events(self, events):
-        for event in events:
-            self.process_event(event)
+    def process_actions(self, actions):
+        for action in actions:
+            self.process_action(action)
 
-    def process_event(self, event):
-        if event == Event.KEY_UP:
-            self.snake.set_direction(Direction.UP)
-        elif event == Event.KEY_DOWN:
-            self.snake.set_direction(Direction.DOWN)
-        elif event == Event.KEY_RIGHT:
-            self.snake.set_direction(Direction.RIGHT)
-        elif event == Event.KEY_LEFT:
-            self.snake.set_direction(Direction.LEFT)
+    def process_action(self, action):
+        self.snake.set_direction(action)
 
 
 class Display():
+    @classmethod
+    def all_subclasses(cls):
+        subclasses = cls.__subclasses__()
+        for c in subclasses:
+            subclasses += c.all_subclasses()
+        return subclasses
+
+    @classmethod
+    def create(cls, name):
+        return next(c for c in cls.all_subclasses() if c.__name__ == name)()
+
+    @classmethod
+    def get_available_types(cls):
+        return [c.__name__ for c in cls.all_subclasses()]
+
     def __enter__(self):
         return self
 
@@ -150,7 +160,30 @@ class Display():
     def render(self, game):
         raise NotImplementedError()
 
-    def get_events(self):
+    def on_eat_egg(self):
+        pass
+
+
+class InputDevice():
+    @classmethod
+    def all_subclasses(cls):
+        subclasses = cls.__subclasses__()
+        for c in subclasses:
+            subclasses += c.all_subclasses()
+        return subclasses
+
+    @classmethod
+    def create(cls, name):
+        return next(c for c in cls.all_subclasses() if c.__name__ == name)()
+
+    @classmethod
+    def get_available_types(cls):
+        return [c.__name__ for c in cls.all_subclasses()]
+
+    def __init__(self):
+        pass
+
+    def get_actions(self):
         raise NotImplementedError()
 
 
@@ -158,20 +191,21 @@ class DummyDisplay(Display):
     def render(self, game):
         print(game.snake.elements, game.state)
 
-    def get_events(self):
+
+class DummyInputDevice(InputDevice):
+    def get_actions(self):
         return []
 
 
-def run_game_loop(game, display_type):
-    with display_type() as display:
-        loop_rate = 10.0
-        loop_duration = 1.0 / loop_rate
-        while game.state != GameState.GAME_OVER:
-            start_time = time.time()
-            game.process_events(display.get_events())
-            game.step()
-            display.render(game)
+def run_game_loop(game, input_device, display, speed):
+    while game.state != GameState.GAME_OVER:
+        start_time = time.time()
+        game.process_actions(input_device.get_actions())
+        game.step()
+        display.render(game)
+        if speed is not None and speed > 0:
             current_time = time.time()
+            loop_duration = 1.0 / speed
             sleep_time = loop_duration - (current_time - start_time)
             if sleep_time > 0:
                 time.sleep(sleep_time)
