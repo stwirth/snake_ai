@@ -9,16 +9,16 @@ import argparse
 import bots
 
 def run(num_iterations, num_games, bot_name, display_name, speed):
-    for i in range(num_iterations):
-        for n in range(num_games):
-            scores = []
-            gm = game.Game()
-            bot = bots.Bot.create(bot_name, gm)
-            with game.Display.create(display_name) as display:
+    with game.Display.create(display_name) as display:
+        for i in range(num_iterations):
+            for n in range(num_games):
+                scores = []
+                gm = game.Game()
+                bot = bots.Bot.create(bot_name, gm)
                 game.run_game_loop(gm, bot, display, speed)
                 scores.append(gm.get_score())
-        print('Iteration {} of {}: Average score over {} games: {}.'.format(
-            i, num_iterations, num_games, sum(scores) / len(scores)))
+            print('Iteration {} of {}: Average score over {} games: {}.'.format(
+                i, num_iterations, num_games, sum(scores) / len(scores)))
 
 
 if __name__ == '__main__':
