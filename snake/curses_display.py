@@ -26,7 +26,7 @@ class CursesDisplay(Display, InputDevice):
         curses.echo()
         curses.endwin()
 
-    def render_test2(self, game):
+    def render(self, game):
         height, width = self.stdscr.getmaxyx()
         # we want to draw the outer border so we need two more characters
         # in each direction
@@ -49,10 +49,8 @@ class CursesDisplay(Display, InputDevice):
                 pad.addch(pos.y + 1, pos.x + 1, curses.ACS_BLOCK, curses.color_pair(1))
 
         pad.border()
+        pad.addstr(0, 3, 'Score:{:>3}'.format(game.score))
         pad.refresh(0, 0, 0, 0, curses.COLS, curses.LINES)
-
-    def render(self, game):
-        self.render_test2(game)
 
     def get_actions(self):
         c = self.stdscr.getch()
