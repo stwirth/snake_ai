@@ -96,35 +96,59 @@ class GameState(enum.Enum):
 
 class Game():
     def __init__(self, room=Room(60, 60), initial_snake_length=2):
-        self.room = room
-        self.score = 0
-        start_position = (self.room.get_width() // 2, self.room.get_height() // 2)
-        self.snake = Snake(start_position=start_position, length=initial_snake_length)
-        self.randomize_egg_position()
-        self.state = GameState.RUNNING
+        self._room = room
+        self._score = 0
+        start_position = (self._room.get_width() // 2, self._room.get_height() // 2)
+        self._snake = Snake(start_position=start_position, length=initial_snake_length)
+        self._randomize_egg_position()
+        self._state = GameState.RUNNING
 
-    def randomize_egg_position(self):
-        self.egg_position = (random.randrange(0, self.room.get_width()),
-                             random.randrange(0, self.room.get_height()))
+    def _randomize_egg_position(self):
+        self._egg_position = (random.randrange(0, self._room.get_width()),
+                              random.randrange(0, self._room.get_height()))
+
+    def get_egg_position(self):
+        return self._egg_position
+
+    def get_room_width(self):
+        return self._room.get_width()
+
+    def get_room_height(self):
+        return self._room.get_height()
+
+    def get_field_value(self, pos):
+        return self._room.get_field_value(pos)
+
+    def get_snake_elements(self):
+        return self._snake.get_elements()
+
+    def get_state(self):
+        return self._state
+
+    def get_score(self):
+        return self._score
+
+    def is_free(self, pos):
+        return self._room.is_free(pos) and pos not in self._snake.get_elements()
 
     def step(self):
-        if self.state == GameState.RUNNING:
-            self.snake.step()
-            if self.snake.get_head_position() == self.egg_position:
-                self.snake.enlarge()
-                self.randomize_egg_position()
-                self.score += 1
-            if not self.room.is_inside(self.snake.get_head_position()):
-                self.state = GameState.GAME_OVER
-            if self.snake.in_self_collision():
-                self.state = GameState.GAME_OVER
+        if self._state == GameState.RUNNING:
+            self._snake.step()
+            if self._snake.get_head_position() == self._egg_position:
+                self._snake.enlarge()
+                self._randomize_egg_position()
+                self._score += 1
+            if not self._room.is_inside(self._snake.get_head_position()):
+                self._state = GameState.GAME_OVER
+            if self._snake.in_self_collision():
+                self._state = GameState.GAME_OVER
 
     def process_actions(self, actions):
         for action in actions:
             self.process_action(action)
 
     def process_action(self, action):
-        self.snake.set_direction(action)
+        self._snake.set_direction(action)
 
 
 class Display():
@@ -151,9 +175,6 @@ class Display():
 
     def render(self, game):
         raise NotImplementedError()
-
-    def on_eat_egg(self):
-        pass
 
 
 class InputDevice():
@@ -190,7 +211,7 @@ class DummyInputDevice(InputDevice):
 
 
 def run_game_loop(game, input_device, display, speed):
-    while game.state != GameState.GAME_OVER:
+    while game.get_state() != GameState.GAME_OVER:
         start_time = time.time()
         display.render(game)
         game.process_actions(input_device.get_actions())

@@ -24,7 +24,7 @@ if __name__ == '__main__':
             gm = game.Game(initial_snake_length=args.initial_snake_length)
             with curses_display.CursesDisplay() as display:
                 game.run_game_loop(gm, display, display, args.speed)
-            print('Your score is {}.'.format(gm.score))
+            print('Your score is {}.'.format(gm.get_score()))
             if not args.restart_after_game_over:
                 break
     except KeyboardInterrupt:

@@ -16,7 +16,7 @@ def run(num_iterations, num_games, bot_name, display_name, speed):
             bot = bots.Bot.create(bot_name, gm)
             with game.Display.create(display_name) as display:
                 game.run_game_loop(gm, bot, display, speed)
-                scores.append(gm.score)
+                scores.append(gm.get_score())
         print('Iteration {} of {}: Average score over {} games: {}.'.format(
             i, num_iterations, num_games, sum(scores) / len(scores)))
 

@@ -31,10 +31,10 @@ class Bot(game.InputDevice):
 
     def get_valid_actions(self):
         valid_actions = []
-        head_pos = self.game.snake.get_head_position()
+        head_pos = self.game.get_snake_elements()[0]
         for dir in game.Direction:
             pos = propagate(head_pos, dir)
-            if self.game.room.is_free(pos) and not self.game.snake.occupies(pos):
+            if self.game.is_free(pos):
                 valid_actions.append((dir, pos))
         return valid_actions
 
@@ -61,8 +61,8 @@ class GoTowardsEggBot(Bot):
         valid_actions = self.get_valid_actions()
         if len(valid_actions) == 0:
             return []
-        egg_pos = self.game.egg_position
-        head_pos = self.game.snake.get_head_position()
+        egg_pos = self.game.get_egg_position()
+        head_pos = self.game.get_snake_elements()[0]
         possible_future_positions = [pos for (_, pos) in valid_actions]
         possible_future_egg_distances = [manhattan_distance(egg_pos, pos) for pos in possible_future_positions]
         best_index = possible_future_egg_distances.index(min(possible_future_egg_distances))
