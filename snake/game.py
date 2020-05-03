@@ -16,35 +16,40 @@ class Snake():
     def __init__(self, start_position, start_direction=Direction.RIGHT, length=1):
         if length <= 0:
             raise ValueError('length must be > 0')
-        self.elements = deque()
+        self._elements = deque()
         for i in range(length):
-            self.elements.append(start_position)
-        self.direction = start_direction
+            self._elements.append(start_position)
+        self._direction = start_direction
+
+    def get_elements(self):
+        return self._elements
 
     def step(self):
-        new_head_pos = (self.elements[0][0] + self.direction.value[0],
-                        self.elements[0][1] + self.direction.value[1])
-        self.elements.pop()
-        self.elements.appendleft(new_head_pos)
+        new_head_pos = (self._elements[0][0] + self._direction.value[0],
+                        self._elements[0][1] + self._direction.value[1])
+        self._elements.pop()
+        self._elements.appendleft(new_head_pos)
 
     def set_direction(self, direction):
-        self.direction = direction
+        self._direction = direction
 
     def enlarge(self, num_elements=1):
         for i in range(num_elements):
-            self.elements.append(copy.deepcopy(self.elements[-1]))
+            self._elements.append(copy.deepcopy(self._elements[-1]))
 
     def get_head_position(self):
-        return self.elements[0]
+        return self._elements[0]
 
     def in_self_collision(self):
-        for i in range(1, len(self.elements)):
-            if self.elements[i] == self.elements[0]:
+        element_iter = iter(self._elements)
+        head = next(element_iter)  # makes following loop start at second element
+        for element in element_iter:
+            if element == head:
                 return True
         return False
 
     def occupies(self, position):
-        return position in self.elements
+        return position in self._elements
 
 
 @enum.unique

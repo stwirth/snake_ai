@@ -43,9 +43,9 @@ class CursesDisplay(Display, InputDevice):
                     pad.addch(y + 1, x + 1, curses.ACS_BLOCK)
                 if pos == game.egg_position:
                     pad.addch(y + 1, x + 1, ord('O'))
-        for pos in game.snake.elements:
-            if pos.x >= 0 and pos.y >= 0 and pos.x <= width and pos.y <= height:
-                pad.addch(pos.y + 1, pos.x + 1, curses.ACS_BLOCK, curses.color_pair(1))
+        for pos in game.snake.get_elements():
+            if pos[0] >= 0 and pos[1] >= 0 and pos[0] < width and pos[1] < height:
+                pad.addch(pos[0] + 1, pos[1] + 1, curses.ACS_BLOCK, curses.color_pair(1))
 
         pad.border()
         pad.addstr(0, 3, 'Score:{:>3}'.format(game.score))
