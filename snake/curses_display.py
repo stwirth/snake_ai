@@ -1,7 +1,6 @@
 from game import Display
 from game import InputDevice
 from game import Direction
-from game import Position
 from game import Field
 import curses
 
@@ -37,7 +36,7 @@ class CursesDisplay(Display, InputDevice):
         pad = curses.newpad(game.room.height + 2, game.room.width + 2)
         for y in range(game.room.height):
             for x in range(game.room.width):
-                pos = Position(x, y)
+                pos = (x, y)
                 if game.room.get_field_value(pos) == Field.FREE:
                     pad.addch(y + 1, x + 1, ord(' '))
                 elif game.room.get_field_value(pos) == Field.WALL:

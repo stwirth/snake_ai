@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Let a bot play snake
+Let a bot play snake.
 """
 
 import game
@@ -8,29 +8,43 @@ import curses_display
 import argparse
 import bots
 
+def run(num_iterations, num_games, bot_name, display_name, speed):
+    for i in range(num_iterations):
+        for n in range(num_games):
+            scores = []
+            gm = game.Game()
+            bot = bots.Bot.create(bot_name, gm)
+            with game.Display.create(display_name) as display:
+                game.run_game_loop(gm, bot, display, speed)
+                scores.append(gm.score)
+        print('Iteration {} of {}: Average score over {} games: {}.'.format(
+            i, num_iterations, num_games, sum(scores) / len(scores)))
+
+
 if __name__ == '__main__':
 
     available_displays = game.Display.get_available_types()
     available_bots = bots.Bot.get_available_types()
 
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-l', '--initial-snake-length', type=int, default=10)
-    parser.add_argument('-i', '--iterations', type=int, default=10)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-i', '--num-iterations', type=int, default=10, help='number of iterations')
+    parser.add_argument('-n', '--num-games', type=int, help='number of games per iteration', default=100)
     parser.add_argument('-s', '--speed', type=float, default=0.0)
-    parser.add_argument('-d', '--display', choices=available_displays, default='CursesDisplay')
-    parser.add_argument('-b', '--bot', choices=available_bots, default='RandomBot')
+    parser.add_argument('-d', '--display', choices=available_displays, default='NoDisplay')
+    parser.add_argument('-b', '--bot', choices=available_bots, default='GoTowardsEggBot')
+    parser.add_argument('-p', '--profile', action='store_true', help='run profiler')
     args = parser.parse_args()
 
     try:
-        scores = []
-        for i in range(args.iterations):
-            gm = game.Game(initial_snake_length=args.initial_snake_length)
-            bot = bots.Bot.create(args.bot, gm)
-            with game.Display.create(args.display) as display:
-                game.run_game_loop(gm, bot, display, args.speed)
-                print('Iteration {}: Score {}.'.format(i, gm.score))
-                scores.append(gm.score)
-        print('Average score over {} iterations: {}.'.format(args.iterations, sum(scores) / len(scores)))
+        if args.profile:
+            import cProfile
+            import pstats
+            cProfile.run('run(args.num_iterations, args.num_games, args.bot, args.display, args.speed)', 'run.profile')
+            stats = pstats.Stats('run.profile')
+            stats.strip_dirs().sort_stats('cumtime').print_stats()
+        else:
+            run(args.num_iterations, args.num_games, args.bot, args.display, args.speed)
+
     except KeyboardInterrupt:
         pass
 

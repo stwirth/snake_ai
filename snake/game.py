@@ -12,29 +12,6 @@ class Direction(enum.Enum):
     RIGHT = (1, 0)
 
 
-class Position:
-    @staticmethod
-    def manhattan_distance(pos1, pos2):
-        return abs(pos1.x - pos2.x) + abs(pos1.y - pos2.y)
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.x == other.x and self.y == other.y
-        else:
-            return False
-
-    def __repr__(self):
-        return '[{}, {}]'.format(self.x, self.y)
-
-    def __add__(self, other):
-        if isinstance(other, Direction):
-            return Position(self.x + other.value[0], self.y + other.value[1])
-
-
 class Snake():
     def __init__(self, start_position, start_direction=Direction.RIGHT, length=1):
         if length <= 0:
@@ -45,11 +22,10 @@ class Snake():
         self.direction = start_direction
 
     def step(self):
+        new_head_pos = (self.elements[0][0] + self.direction.value[0],
+                        self.elements[0][1] + self.direction.value[1])
         self.elements.pop()
-        head = copy.deepcopy(self.elements[0])
-        head.x += self.direction.value[0]
-        head.y += self.direction.value[1]
-        self.elements.appendleft(head)
+        self.elements.appendleft(new_head_pos)
 
     def set_direction(self, direction):
         self.direction = direction
@@ -84,16 +60,16 @@ class Room():
         self.fields = [Field.FREE] * width * height
 
     def get_field_value(self, position):
-        if position.x < 0 or position.x > self.width:
+        if position[0] < 0 or position[0] > self.width:
             raise IndexError('x must be between 0 and {}'.format(self.width))
-        if position.y < 0 or position.y > self.height:
+        if position[1] < 0 or position[1] > self.height:
             raise IndexError('y must be between 0 and {}'.format(self.height))
-        return self.fields[position.y * self.width + position.x]
+        return self.fields[position[1] * self.width + position[0]]
 
     def is_inside(self, position):
-        if position.x < 0 or position.x >= self.width:
+        if position[0] < 0 or position[0] >= self.width:
             return False
-        if position.y < 0 or position.y >= self.height:
+        if position[1] < 0 or position[1] >= self.height:
             return False
         return True
 
@@ -108,16 +84,16 @@ class GameState(enum.Enum):
 
 
 class Game():
-    def __init__(self, room=Room(60, 60), initial_snake_length=1):
+    def __init__(self, room=Room(60, 60), initial_snake_length=2):
         self.room = room
         self.score = 0
-        start_position = Position(self.room.width // 2, self.room.height // 2)
+        start_position = (self.room.width // 2, self.room.height // 2)
         self.snake = Snake(start_position=start_position, length=initial_snake_length)
         self.randomize_egg_position()
         self.state = GameState.RUNNING
 
     def randomize_egg_position(self):
-        self.egg_position = Position(random.randrange(0, self.room.width), random.randrange(0, self.room.height))
+        self.egg_position = (random.randrange(0, self.room.width), random.randrange(0, self.room.height))
 
     def step(self):
         if self.state == GameState.RUNNING:
