@@ -9,24 +9,24 @@ class CursesDisplay(Display, InputDevice):
         super().__init__()
 
     def __enter__(self):
-        self.stdscr = curses.initscr()
+        self._stdscr = curses.initscr()
         curses.start_color()  # we want to use color
         curses.noecho()  # don't echo pressed keys
         curses.cbreak()  # capture input without Enter
         curses.curs_set(False) # don't display cursor
-        self.stdscr.keypad(True)  # enable arrow keys
-        self.stdscr.nodelay(True) # don't block on getch()
+        self._stdscr.keypad(True)  # enable arrow keys
+        self._stdscr.nodelay(True) # don't block on getch()
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
         return self
 
     def __exit__(self, type, value, traceback):
         curses.nocbreak()
-        self.stdscr.keypad(False)
+        self._stdscr.keypad(False)
         curses.echo()
         curses.endwin()
 
     def render(self, game):
-        height, width = self.stdscr.getmaxyx()
+        height, width = self._stdscr.getmaxyx()
         # we want to draw the outer border so we need two more characters
         # in each direction
         if game.get_room_height() + 2 > height or \
@@ -53,7 +53,7 @@ class CursesDisplay(Display, InputDevice):
         pad.refresh(0, 0, 0, 0, curses.COLS, curses.LINES)
 
     def get_actions(self):
-        c = self.stdscr.getch()
+        c = self._stdscr.getch()
         if c == curses.KEY_UP:
             return [Direction.UP]
         if c == curses.KEY_DOWN:
