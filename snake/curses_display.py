@@ -29,13 +29,13 @@ class CursesDisplay(Display, InputDevice):
         height, width = self.stdscr.getmaxyx()
         # we want to draw the outer border so we need two more characters
         # in each direction
-        if game.room.height + 2 > height or \
-           game.room.width + 2 > width:
+        if game.room.get_height() + 2 > height or \
+           game.room.get_width() + 2 > width:
             raise IndexError('Window is only {} x {} but game needs {} x {}.'.format(
-                             width, height, game.room.width, game.room.height))
-        pad = curses.newpad(game.room.height + 2, game.room.width + 2)
-        for y in range(game.room.height):
-            for x in range(game.room.width):
+                             width, height, game.room.get_width(), game.room.get_height()))
+        pad = curses.newpad(game.room.get_height() + 2, game.room.get_width() + 2)
+        for y in range(game.room.get_height()):
+            for x in range(game.room.get_width()):
                 pos = (x, y)
                 if game.room.get_field_value(pos) == Field.FREE:
                     pad.addch(y + 1, x + 1, ord(' '))

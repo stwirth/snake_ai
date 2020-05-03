@@ -60,21 +60,27 @@ class Field(enum.Enum):
 
 class Room():
     def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.fields = [Field.FREE] * width * height
+        self._width = width
+        self._height = height
+        self._fields = [Field.FREE] * width * height
+
+    def get_width(self):
+        return self._width
+
+    def get_height(self):
+        return self._height
 
     def get_field_value(self, position):
-        if position[0] < 0 or position[0] > self.width:
-            raise IndexError('x must be between 0 and {}'.format(self.width))
-        if position[1] < 0 or position[1] > self.height:
-            raise IndexError('y must be between 0 and {}'.format(self.height))
-        return self.fields[position[1] * self.width + position[0]]
+        if position[0] < 0 or position[0] > self._width:
+            raise IndexError('x must be between 0 and {}'.format(self._width))
+        if position[1] < 0 or position[1] > self._height:
+            raise IndexError('y must be between 0 and {}'.format(self._height))
+        return self._fields[position[1] * self._width + position[0]]
 
     def is_inside(self, position):
-        if position[0] < 0 or position[0] >= self.width:
+        if position[0] < 0 or position[0] >= self._width:
             return False
-        if position[1] < 0 or position[1] >= self.height:
+        if position[1] < 0 or position[1] >= self._height:
             return False
         return True
 
@@ -92,13 +98,14 @@ class Game():
     def __init__(self, room=Room(60, 60), initial_snake_length=2):
         self.room = room
         self.score = 0
-        start_position = (self.room.width // 2, self.room.height // 2)
+        start_position = (self.room.get_width() // 2, self.room.get_height() // 2)
         self.snake = Snake(start_position=start_position, length=initial_snake_length)
         self.randomize_egg_position()
         self.state = GameState.RUNNING
 
     def randomize_egg_position(self):
-        self.egg_position = (random.randrange(0, self.room.width), random.randrange(0, self.room.height))
+        self.egg_position = (random.randrange(0, self.room.get_width()),
+                             random.randrange(0, self.room.get_height()))
 
     def step(self):
         if self.state == GameState.RUNNING:
